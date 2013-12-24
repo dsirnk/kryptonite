@@ -21,9 +21,8 @@ var fs = require('fs'),
 				hidden: true
 			}
 		}
-	};
-
-z = new dsi();
+	},
+    z = new dsi();
 
 var getFTPConfig = function(schema, callback) {
 	myPrompt.start();
@@ -45,6 +44,7 @@ getFTPConfig(schema, function(ftpConfig) {
 			ftpC.list(dir, function(err, list) {
 				if (err) throw err;
 				// z.dir(list);
+				z.logDash();
 				list.forEach(function(file) {
 					if(['.', '..'].indexOf(file.name) === -1) {
 						if(file.type === 'd') {
@@ -57,6 +57,7 @@ getFTPConfig(schema, function(ftpConfig) {
 						}
 					}
 				});
+				z.logDash();
 			});
 		}
 		ftpList('.data/');

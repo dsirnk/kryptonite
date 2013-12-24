@@ -15,7 +15,7 @@ dsi.prototype.log = function(cmd, colorize) {
 
 dsi.prototype.logDash = function(dashLen) {
 	dashLen = dashLen || config.dashLen;
-	console.log(Array(dashLen).join('-'));
+	this.log(Array(dashLen).join('-'));
 };
 
 dsi.prototype.dir = function(cmd) { console.dir(cmd); };

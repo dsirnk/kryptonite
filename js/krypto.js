@@ -1,70 +1,63 @@
 /* config variables
 -------------------*/
 
-var pkg = require("./package.json");
-
-var firebase = require('firebase');
-var firebaseRoot = new firebase(pkg.firebase + '/krypt');
-
-var krypto = require('crypto');
-var util = require('util');
-
-var myPrompt = require("prompt");
-var schema = {
-	properties: {
-		encrypt: {
-			description: 'Do you want to encrypt or decrypt',
-			// type: 'boolean',
-			pattern: /^e|encrypt|d|decrypt$/,
-			message: 'Accepted values:\n'+
-					'\t\tencrypt: e OR encrypt\n'+
-					'\t\tdecrypt: d OR decrypt',
-			default: 'encrypt',
-			before: function(val) {
-				var finalVal = (['d','decrypt'].indexOf(val) == -1);
-				console.log('You want to ' + (finalVal ? 'encyrpt' : 'decrypt'));
-				return finalVal;
+var pkg = require("./package.json"),
+	firebase = require('firebase'),
+	firebaseRoot = new firebase(pkg.firebase + '/krypt'),
+	krypto = require('crypto'),
+	myPrompt = require("prompt"),
+	schema = {
+		properties: {
+			encrypt: {
+				description: 'Do you want to encrypt or decrypt',
+				// type: 'boolean',
+				pattern: /^e|encrypt|d|decrypt$/,
+				message: 'Accepted values:\n'+
+						'\t\tencrypt: e OR encrypt\n'+
+						'\t\tdecrypt: d OR decrypt',
+				default: 'encrypt',
+				before: function(val) {
+					var finalVal = (['d','decrypt'].indexOf(val) == -1);
+					console.log('You want to ' + (finalVal ? 'encyrpt' : 'decrypt'));
+					return finalVal;
+				}
+			},
+			multiple: {
+				description: 'Do you want to process multiple values -- in comma separated form',
+				// type: 'boolean',
+				pattern: /^[yn]$/,
+				message: 'Please use default or enter y/n',
+				default: 'n',
+				before: function(val) { console.log('You want to process ' + val); return val === 'y'; }
+			},
+			value: {
+				description: 'Please enter the value to be processed',
+				required: true
+			},
+			password: {
+				description: 'Your seceret passphrase',
+				hidden: true
+			},
+			passwordHint: {
+				description: 'You may need a hint in future'
 			}
-		},
-		multiple: {
-			description: 'Do you want to process multiple values -- in comma separated form',
-			// type: 'boolean',
-			pattern: /^[yn]$/,
-			message: 'Please use default or enter y/n',
-			default: 'n',
-			before: function(val) { console.log('You want to process ' + val); return val === 'y'; }
-		},
-		value: {
-			description: 'Please enter the value to be processed',
-			required: true
-		},
-		password: {
-			description: 'Your seceret passphrase',
-			hidden: true
-		},
-		passwordHint: {
-			description: 'You may need a hint in future'
 		}
-	}
-};
+	};
 var getInput = function(schema) {
 	myPrompt.start();
 	myPrompt.get(schema, function (err, result) {
-		getData(result);
-		console.log(err || (util.inspect(result, true, null, true)));
+		if(result.multiple) {
+			console.log('Processing multiple entries in the Array:');
+			result.value.split(',').forEach(function(val) {
+				kryption(val, result);
+			})
+		} else {
+			console.log('Processing single entry:');
+			kryption(result.value, result);
+		}
+		console.log(err || result);
 		process.exit();
 	});
-}
-var getData = function(data) {
-	if(data.multiple) {
-		console.log('Processing multiple entries in the Array:');
-		data.value.split(',').forEach(function(val) {
-			kryption(val, data);
-		})
-	} else {
-		console.log('Processing single entry:');
-		kryption(data.value, data);
-	}
 }
 var kryption = function(value, options) {
 	console.log('-> Processing - ' + value);
@@ -91,53 +84,3 @@ var deKrypt = function(text, pass) {
 }
 getInput(schema);
 
-/* including
-------------*
-
-var fs = require("fs");
-// file system for fs.watch OR fs.watchFile OR fs.unwatch OR fs.read
-// http://nodejs.org/api/fs.html#fs_file_system
-
-
-
-/* get Input
-------------*
-
-var sys = require("sys");
-
-var stdin = process.openStdin();
-
-stdin.addListener("data", function(d) {
-	// note:  d is an object, and when converted to a string it will
-	// end with a linefeed.  so we (rather crudely) account for that
-	// with toString() and then substring()
-	console.log("you entered: [" + d.toString().substring(0, d.length-1) + "]");
-});
-
-
-
-/* readline, nodes API
-----------------------*
-
-var readline = require('readline'),
-rl = readline.createInterface(process.stdin, process.stdout);
-
-rl.setPrompt('OHAI> ');
-rl.prompt();
-
-rl.on('line', function(line) {
-  switch(line.trim()) {
-	case 'hello':
-	  console.log('world!');
-	  break;
-	default:
-	  console.log('Say what? I might have heard `' + line.trim() + '`');
-	  break;
-  }
-  rl.prompt();
-}).on('close', function() {
-  console.log('Have a great day!');
-  process.exit(0);
-});
-
-/**/
