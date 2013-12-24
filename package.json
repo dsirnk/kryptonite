@@ -1,0 +1,24 @@
+{
+	"name": "kryptonite",
+	"version": "0.0.0",
+	"description": "Krypt my code and push it to firebase",
+	"main": "krypt.js",
+	"repository": "https://github.com/dsirnk/kryptonite",
+	"author": "Rnk Ds <dsirnk@c9.io>",
+	"keywords": [
+		"encrypt",
+		"decrypt"
+	],
+	"_firebase": "https://dsirnk.firebaseio.com",
+	"firebase": "https://ydr6gr6hxis.firebaseio-demo.com",
+	"dependencies": {
+		"async": "~0.2.8",
+		"express": "~3.2.4",
+		"socket.io": "~0.9.14"
+	},
+	"devDependencies": {
+		"firebase": "~1.0.1-npm",
+		"prompt": "~0.2.12",
+		"ftp": "~0.3.5"
+	}
+}
