@@ -19,26 +19,20 @@ fx = new fxp({
 	user: my.websites.themobilestore.user,
 	password: 'hetu2100',
 	onReady: function() {
+		z.logDash();
 		var ftpList = function(dir) {
 			fx.ftpC.list(dir, function(err, list) {
 				if (err) throw err;
 				// z.dir(list);
-				z.logDash();
 				list.forEach(function(file) {
 					if(['.', '..'].indexOf(file.name) === -1) {
-						if(file.type === 'd') {
-							z.log(dir + file.name.blue);
-							/*-- recursive --*/
-							// ftpList(dir + file.name + '/');
-							/*-- --*/
-						} else {
-							z.log(dir + file.name);
-						}
+						process.stdout.write(Array(dir.split('/').length).join('\t'));
+						z.ls(file);
+						if(file.type === 'd') ftpList(dir + file.name + '/');
 					}
 				});
-				z.logDash();
 			});
-		}
+		};
 		ftpList('.data/');
 		fx.ftpC.end();
 		// fx.ftpC.get('thisFile.txt', function(err, stream) {

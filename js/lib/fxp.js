@@ -1,4 +1,4 @@
-var moduleName = 'fxp',
+var _moduleName = 'fxp',
 	defaults = {
 		host: 'localhost',
 		user: '',
@@ -11,10 +11,9 @@ var moduleName = 'fxp',
 	z = new dsi();
 
 var fxp = module.exports = function(options) {
-	this._name = moduleName;
+	this._name = _moduleName;
 	this._defaults = defaults;
 	this.options = z.extend({}, defaults, options);
-	this.ftpC = new ftp(),
 	this._schema = {
 		properties: {
 			host: {
@@ -34,7 +33,8 @@ var fxp = module.exports = function(options) {
 				default: this.options.password
 			}
 		}
-	};
+	},
+	this.ftpC = new ftp();
 	this.init();
 }
 

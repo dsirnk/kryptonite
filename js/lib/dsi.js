@@ -1,27 +1,56 @@
-var util = require('util'),
-	colors = require('colors'),
-	my = require('../../config.json');
+var _moduleName = 'dsi',
+	defaults = {
+		_user: 'dsirnk',
+		symbol: {
+			dir: '+ ',
+			file: '| '
+		},
+		color: {
+			dir: 'blue',
+			file: 'white'
+		},
+		separator: '-',
+		bullet: '-> ',
+		separatorLen: 100
+	},
+	util = require('util'),
+	colors = require('colors');
 
-var dsi = module.exports = function() {
-	var self = this;
-
-	this._user = my.user;
-	this._dashLen = my.dashLen;
+var dsi = module.exports = function(options) {
+	this._name = _moduleName;
+	this._defaults = defaults;
+	this.options = this.extend({}, defaults, options);
+	this.init();
 }
 
 dsi.prototype = {
+	init: function () {
+	},
+	extend: function(target, defaults, src) {
+		src = typeof src === 'object' ? src : {};
+		for(var key in defaults)
+			target[key] = src.hasOwnProperty(key) ? src[key] : defaults[key];
+		return target;
+	},
 	log: function(cmd, colorize) {
 		/*-- if object color it --*
 		if(typeof cmd === "object") util.inspect(cmd, true, null, true);
 		/*-- --*/
 		console.log(cmd);
 	},
-	logBul: function(cmd) { this.log('-> ' + cmd); },
-	logDash: function(dashLen) { this.log(Array(dashLen || this._dashLen).join('-')); },
+	logBul: function(cmd) { this.log(this.options.bullet + cmd); },
+	logDash: function() {
+		this.log(
+			Array(this.options.separatorLen)
+				.join(this.options.separator)
+		);
+	},
 	dir: function(cmd) { console.dir(cmd); },
-	extend: function(target, defaults, options) {
-		for(var key in defaults)
-			target[key] = options.hasOwnProperty(key) ? options[key] : defaults[key];
-		return target;
+	ls: function(file) {
+		var type = (file.type === 'd' ? 'dir' : 'file');
+		this.log(
+			this.options.symbol[type] +
+			file.name[this.options.color[type]]
+		);
 	}
 }
