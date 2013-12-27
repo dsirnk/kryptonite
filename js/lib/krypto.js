@@ -1,24 +1,17 @@
-var crypto = require('crypto'),
-	dsi = require('./dsi'),
-	myPrompt = require("prompt"),
-	z = new dsi();
-
-var krypto = module.exports = function() {
-	var self = this;
-
-	this.schema = {
-		properties: {
+var _moduleName = 'krypto',
+	_defaults = {
+		prompt: {
 			encrypt: {
-				description: 'Do you want to encrypt or decrypt',
+				description: 'Do you want to [e]ncrypt or [d]ecrypt',
 				// type: 'boolean',
 				pattern: /^e|encrypt|d|decrypt$/,
 				message: 'Accepted values:\n'+
 						'\t\tencrypt: e OR encrypt\n'+
 						'\t\tdecrypt: d OR decrypt',
-				default: 'encrypt',
+				default: 'e',
 				before: function(val) {
 					var finalVal = (['d','decrypt'].indexOf(val) == -1);
-					z.log('You want to ' + (finalVal ? 'encyrpt' : 'decrypt'));
+					z.logV('Let\'s ' + (finalVal ? 'encyrpt' : 'decrypt') + ' then...');
 					return finalVal;
 				}
 			},
@@ -28,10 +21,14 @@ var krypto = module.exports = function() {
 				pattern: /^[yn]$/,
 				message: 'Please use default or enter y/n',
 				default: 'n',
-				before: function(val) { z.log('You want to process ' + val); return val === 'y'; }
+				before: function(val) {
+					var finalVal = val === 'y';
+					z.logV('Alright! ' + (!finalVal ? 'a single value' : 'multiple values'));
+					return finalVal;
+				}
 			},
 			value: {
-				description: 'Please enter the value to be processed',
+				description: 'Please enter the value(s) to be processed',
 				required: true
 			},
 			password: {
@@ -42,48 +39,58 @@ var krypto = module.exports = function() {
 				description: 'You may need a hint in future'
 			}
 		}
-	};
+	},
+	crypto = require('crypto'),
+	dsi = require('./dsi'),
+	z = new dsi();
 
-	this.getInput();
+var krypto = module.exports = function(options) {
+	this._name = _moduleName;
+	this._defaults = _defaults;
+	this.options = z.extend(_defaults, options);
+
+	this.init();
 }
 
-krypto.prototype.getInput = function() {
-	var self = this;
-	myPrompt.start();
-	myPrompt.get(this.schema, function (err, result) {
-		if(result.multiple) {
-			z.log('Processing multiple entries in the Array:');
-			result.value.split(',').forEach(function(val) {
-				self.kryption(val, result);
-			})
-		} else {
-			z.log('Processing single entry:');
-			self.kryption(result.value, result);
-		}
-		return err ? z.log('Error in Input') : result;
-	});
-}
-krypto.prototype.kryption = function(value, options) {
-	var self = this;
-	z.logBul('Processing - ' + value);
-	options.Krypted = (options.encrypt ? self.enKrypt : self.deKrypt)(value, options.password);
-	z.logBul('Processed - ' + options.Krypted);
-	z.logBul('Process Hint - ' + options.passwordHint);
-	process.exit();
-}
-krypto.prototype.enKrypt = function(value, pass) {
-	try {
-		var enKryptAES = crypto.createCipher('aes-256-cbc', pass);
-		var enKrypted = enKryptAES.update(value,'utf8','hex');
-		enKrypted += enKryptAES.final('hex');
-		return enKrypted;
-	} catch (err) { z.log('Error in Encrypting'); }
-}
-krypto.prototype.deKrypt = function(value, pass) {
-	try {
-		var deKryptAES = crypto.createDecipher('aes-256-cbc', pass);
-		var deKrypted = deKryptAES.update(value,'hex','utf8');
-		deKrypted += deKryptAES.final('utf8');
-		return deKrypted;
-	} catch (err) { z.log('Error in Decrypting'); }
+krypto.prototype = {
+	init: function() {
+		z.logD('Initialized Module: ' + this._name.u);
+		this.getInput();
+	},
+	getInput: function() {
+		var self = this;
+		z.prompt(this.options.prompt, function (result) {
+			if(result.multiple) {
+				z.logD('Processing multiple entries');
+				result.value.split(',').forEach(function(val) {
+					z.logO(self.kryption(val, result));
+				})
+			} else {
+				z.logD('Processing single entry');
+				z.logO(self.kryption(result.value, result));
+			}
+			return result;
+		});
+	},
+	kryption: function(value, options) {
+		var self = this;
+		options.Krypted = (options.encrypt ? self.enKrypt : self.deKrypt)(value, options.password);
+		return options.Krypted;
+	},
+	enKrypt: function(value, pass) {
+		try {
+			var enKryptAES = crypto.createCipher('aes-256-cbc', pass);
+			var enKrypted = enKryptAES.update(value,'utf8','hex');
+			enKrypted += enKryptAES.final('hex');
+			return enKrypted;
+		} catch (err) { z.logErr('Error in Encrypting'); }
+	},
+	deKrypt: function(value, pass) {
+		try {
+			var deKryptAES = crypto.createDecipher('aes-256-cbc', pass);
+			var deKrypted = deKryptAES.update(value,'hex','utf8');
+			deKrypted += deKryptAES.final('utf8');
+			return deKrypted;
+		} catch (err) { z.logErr('Error in Decrypting'); }
+	}
 }

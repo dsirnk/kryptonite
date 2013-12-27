@@ -1,53 +1,49 @@
 var _moduleName = 'fxp',
-	defaults = {
+	_defaults = {
 		host: 'localhost',
 		user: '',
 		password: '',
+		prompt: {
+			host: {
+				description: 'Hostname or IP address of the server.',
+				// pattern: /^(ftp(?:s)?\:\/\/[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)*\.[a-zA-Z]{2,6}(?:\/?|(?:\/[\w\-]+)*)(?:\/?|\/\w+\.[a-zA-Z]{2,4}(?:\?[\w]+\=[\w\-]+)?)?(?:\&[\w]+\=[\w\-]+)*)$/,
+				message: 'Please enter a valid host address',
+			},
+			user: {
+				description: 'Username for authentication.',
+				message: 'Please enter a valid user/username',
+			},
+			password: {
+				description: 'Password for authentication.',
+				hidden: true,
+			}
+		},
 		onReady: undefined
 	},
-	myPrompt = require("prompt"),
 	ftp = require('ftp'),
 	dsi = require('./dsi'),
 	z = new dsi();
 
 var fxp = module.exports = function(options) {
 	this._name = _moduleName;
-	this._defaults = defaults;
-	this.options = z.extend({}, defaults, options);
-	this._schema = {
-		properties: {
-			host: {
-				description: 'Hostname or IP address of the server.',
-				// pattern: /^(ftp(?:s)?\:\/\/[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)*\.[a-zA-Z]{2,6}(?:\/?|(?:\/[\w\-]+)*)(?:\/?|\/\w+\.[a-zA-Z]{2,4}(?:\?[\w]+\=[\w\-]+)?)?(?:\&[\w]+\=[\w\-]+)*)$/,
-				message: 'Please enter a valid host address',
-				default: this.options.host
-			},
-			user: {
-				description: 'Username for authentication.',
-				message: 'Please enter a valid user/username',
-				default: this.options.user
-			},
-			password: {
-				description: 'Password for authentication.',
-				hidden: true,
-				default: this.options.password
-			}
-		}
-	},
+	this._defaults = _defaults;
+	this.options = z.extend(_defaults, options);
 	this.ftpC = new ftp();
 	this.init();
 }
 
 fxp.prototype = {
 	init: function() {
+		this.options.prompt = z.extend(this.options.prompt, {
+			host: { default: this.options.host },
+			user: { default: this.options.user },
+			password: { default: this.options.password }
+		});
 		this.config();
 	},
 	config: function() {
 		var self = this;
-		myPrompt.start();
-
-		myPrompt.get(this._schema, function (err, result) {
-			if (err) { z.log(err); }
+		z.prompt(this.options.prompt, function (result) {
 			self.ftpConnnect(result);
 		});
 	},

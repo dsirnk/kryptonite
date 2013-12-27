@@ -1,13 +1,22 @@
 var _moduleName = 'dsi',
-	defaults = {
+	_defaults = {
 		_user: 'dsirnk',
+		_verbose: 'debug', /* true, false or debug */
 		symbol: {
 			dir: '+ ',
 			file: '| '
 		},
-		color: {
-			dir: 'blue',
-			file: 'white'
+		colors: {
+			log: 'inverse',
+			info: 'yellow',
+			alert: 'red',
+			data: 'green',
+			intro: 'grey',
+			dir: 'cyan',
+			file: 'blue',
+			b: 'bold',
+			i: 'italic',
+			u: 'underline'
 		},
 		separator: '-',
 		bullet: '-> ',
@@ -15,32 +24,61 @@ var _moduleName = 'dsi',
 	},
 	util = require('util'),
 	colors = require('colors'),
+	prmpt = require("prompt"),
 	fs = require('fs'),
 	mkdirp = require('mkdirp');
 
 var dsi = module.exports = function(options) {
 	this._name = _moduleName;
-	this._defaults = defaults;
-	this.options = this.extend({}, defaults, options);
+	this._defaults = _defaults;
+	this.options = this.extend(_defaults, options);
 	this.init();
 }
 
 dsi.prototype = {
 	init: function () {
+		colors.setTheme(this.options.colors);
 	},
-	extend: function(target, defaults, src) {
-		src = typeof src === 'object' ? src : {};
-		for(var key in defaults)
-			target[key] = src.hasOwnProperty(key) ? src[key] : defaults[key];
+	extend: function(destination, source) {
+		var target = JSON.parse(JSON.stringify(destination));
+		source = typeof source === 'object' ? source : {};
+		for (var property in source) {
+			if (source[property] && source[property].constructor && source[property].constructor === Object) {
+				target[property] = destination[property] || {};
+				target[property] = arguments.callee(destination[property], source[property]);
+			} else {
+				target[property] = source[property];
+			}
+		}
 		return target;
 	},
-	log: function(cmd, colorize) {
-		/*-- if object color it --*
-		if(typeof cmd === "object") util.inspect(cmd, true, null, true);
-		/*-- --*/
+	prompt: function(properties, callback) {
+		var self = this,
+			schema = {properties: properties};
+		prmpt.message = '';
+		// prmpt.delimiter = ':';
+		prmpt.start();
+		prmpt.get(schema, function (err, result) {
+			if (err) { self.log(err.alert); }
+			callback(result);
+		});
+	},
+	log: function(cmd) {
 		console.log(cmd);
 	},
-	logBul: function(cmd) { this.log(this.options.bullet + cmd); },
+	logO: function(cmd) {
+		this.log(cmd.toString().data);
+	},
+	logErr: function(cmd) {
+		this.log(cmd.toString().alert);
+	},
+	logV: function(cmd) {
+		if(this.options._verbose) this.log(cmd.toString().info);
+	},
+	logD: function(cmd) {
+		if(this.options._verbose === 'debug') this.log(cmd.toString().info.log);
+	},
+	logBul: function(cmd) { this.log(this.options.bullet.intro + cmd); },
 	logDash: function() {
 		this.log(
 			Array(this.options.separatorLen)
@@ -51,7 +89,7 @@ dsi.prototype = {
 		var type = (file.type === 'd' ? 'dir' : 'file');
 		this.log(
 			this.options.symbol[type] +
-			file.name[this.options.color[type]]
+			file.name[type]
 		);
 	},
 	dir: function(cmd) { console.dir(cmd); },
@@ -59,11 +97,11 @@ dsi.prototype = {
 		var self = this;
 		mkdirp(path, function(err) {
 			if (err) console.error((err).red);
-			else self.log('Created Directory: '.yellow + (path).green);
+			else self.logV('Created Directory: '.info + path.data);
 		})
 	},
 	mkfile: function(path) {
 		fs.createWriteStream(path);
-		this.log('Created File: '.yellow + (path).green);
+		this.logV('Created File: '.info + path.data);
 	}
 }
