@@ -20,7 +20,7 @@ var _moduleName = 'fxp',
 		},
 		onReady: undefined
 	},
-	ftp = require('ftp'),
+	ftp = require('jsftp'),
 	dsi = require('./dsi'),
 	z = new dsi();
 
@@ -28,7 +28,6 @@ var fxp = module.exports = function(options) {
 	this._name = _moduleName;
 	this._defaults = _defaults;
 	this.options = z.extend(_defaults, options);
-	this.ftpC = new ftp();
 	this.init();
 }
 
@@ -50,11 +49,30 @@ fxp.prototype = {
 	ftpConnnect: function(config) {
 		var self = this;
 
-		self.ftpC.connect(config);
-		self.ftpC.on('connect', function() { z.log('Connection :: connect'); });
-		self.ftpC.on('ready', self.options.onReady);
-		self.ftpC.on('error', function(err) { z.log('Connection :: error :: ' + err); });
-		self.ftpC.on('end', function() { z.log('Connection :: end'); });
-		self.ftpC.on('close', function(had_error) { z.log('Connection :: close'); });
+		self.ftpC = new ftp(config);
+		self.ftpC.auth(self.options.user, self.options.password, function (err) {
+			if (err) z.logErr('Authentication ' + err);
+			else {
+				z.logD('Successully Connected to ' + config.host);
+				self.ftpC.keepAlive();
+				self.options.onReady();
+			};
+		});
+	},
+	getFileContent: function(path) {
+		fx.ftpC.get(path, function(err, socket) {
+			if (err) z.logErr('There was an error in the path.');
+			var content;
+			socket.on("data", function(d) {
+				content = d.toString();
+				z.logD(path + ' : ' + content);
+			});
+			socket.on("close", function(hadErr) {
+				if (hadErr)
+					z.logErr('There was an error retrieving the file.');
+			});
+			socket.resume();
+			return content;
+		});
 	}
 }

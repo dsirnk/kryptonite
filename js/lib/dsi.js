@@ -63,8 +63,10 @@ dsi.prototype = {
 			callback(result);
 		});
 	},
-	log: function(cmd) {
-		console.log(cmd);
+	log: function(cmd, options) {
+		options = options || {cont: false};
+		if (options.cont) process.stdout.write(cmd);
+		else console.log(cmd);
 	},
 	logO: function(cmd) {
 		this.log(cmd.toString().data);
@@ -85,9 +87,11 @@ dsi.prototype = {
 				.join(this.options.separator)
 		);
 	},
-	ls: function(file) {
-		var type = (file.type === 'd' ? 'dir' : 'file');
+	ls: function(file, options) {
+		options = this.extend({isDir: false, path:''}, options);
+		type = options.isDir ? 'dir' : 'file';
 		this.log(
+			Array(options.path.split('/').length).join('\t') +
 			this.options.symbol[type] +
 			file.name[type]
 		);
