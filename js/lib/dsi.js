@@ -14,7 +14,9 @@ var _moduleName = 'dsi',
 		separatorLen: 100
 	},
 	util = require('util'),
-	colors = require('colors');
+	colors = require('colors'),
+	fs = require('fs'),
+	mkdirp = require('mkdirp');
 
 var dsi = module.exports = function(options) {
 	this._name = _moduleName;
@@ -45,12 +47,23 @@ dsi.prototype = {
 				.join(this.options.separator)
 		);
 	},
-	dir: function(cmd) { console.dir(cmd); },
 	ls: function(file) {
 		var type = (file.type === 'd' ? 'dir' : 'file');
 		this.log(
 			this.options.symbol[type] +
 			file.name[this.options.color[type]]
 		);
+	},
+	dir: function(cmd) { console.dir(cmd); },
+	mkdir: function(path) {
+		var self = this;
+		mkdirp(path, function(err) {
+			if (err) console.error((err).red);
+			else self.log('Created Directory: '.yellow + (path).green);
+		})
+	},
+	mkfile: function(path) {
+		fs.createWriteStream(path);
+		this.log('Created File: '.yellow + (path).green);
 	}
 }

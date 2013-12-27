@@ -17,7 +17,7 @@ var fxp = module.exports = function(options) {
 	this._schema = {
 		properties: {
 			host: {
-				description: 'The hostname or IP address of the FTP server.',
+				description: 'Hostname or IP address of the server.',
 				// pattern: /^(ftp(?:s)?\:\/\/[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)*\.[a-zA-Z]{2,6}(?:\/?|(?:\/[\w\-]+)*)(?:\/?|\/\w+\.[a-zA-Z]{2,4}(?:\?[\w]+\=[\w\-]+)?)?(?:\&[\w]+\=[\w\-]+)*)$/,
 				message: 'Please enter a valid host address',
 				default: this.options.host
