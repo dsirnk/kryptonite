@@ -36,7 +36,7 @@ fxp.prototype = {
 		var self = this;
 
 		/*==========  Removing prompts that aren't needed e.g. if the password is not provided  ==========*/
-		for (prop in self.options.prompt) {
+		for (var prop in self.options.prompt) {
 			if (self.options.hasOwnProperty(prop)) {
 				self._defaults.prompt[prop].default = self.options[prop]
 				delete  self.options.prompt[prop];

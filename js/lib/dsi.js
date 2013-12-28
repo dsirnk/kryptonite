@@ -45,13 +45,13 @@ dsi.prototype = {
 			source = typeof source === 'object' ? source : {};
 
 		/*==========  If destination contains functions and soruce doesn't, the functions are lost  ==========*/
-		for (prop in destination) {
+		for (var prop in destination) {
 			if(typeof destination[prop] === 'function')
 				target[prop] = destination[prop];
 		};
 
 		/*==========  Recursively merge source into destination and output on target  ==========*/
-		for (prop in source) {
+		for (var prop in source) {
 			if (source[prop] && source[prop].constructor && source[prop].constructor === Object) {
 				target[prop] = destination[prop] || {};
 				target[prop] = arguments.callee(destination[prop], source[prop]);
@@ -121,8 +121,8 @@ dsi.prototype = {
 	},
 	/*==========  Log tree of the folder structure  ==========*/
 	ls: function(file, options) {
-		options = this.extend({isDir: false, path:''}, options);
-		type = options.isDir ? 'dir' : 'file';
+		var options = this.extend({isDir: false, path:''}, options),
+			type = options.isDir ? 'dir' : 'file';
 		this.log(
 			Array(options.path.split('/').length).join('\t') +
 			this.options.symbol[type] +

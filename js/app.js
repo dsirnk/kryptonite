@@ -23,7 +23,7 @@ var config = z.extend({
 			});
 		}
 	}, my.websites.themobilestore),
-	ftp = new fxp(config).ftpC,
+	fx = new fxp(config),
 	ftpList = function(dir, callback) {
 		/*==========  'struct' will store the folder structure  ==========*/
 		var struct = {};
@@ -31,7 +31,7 @@ var config = z.extend({
 		/*==========  Create local folder  ==========*/
 		if(dir[dir.length-1] !== '/') dir += '/';
 		z.mkdir(dest + dir);
-		ftp.ls(dir, function(err, list) {
+		fx.ftpC.ls(dir, function(err, list) {
 			z.logD('Iterating over ' + dir.dir);
 			if (err) { z.logErr(err); callback(err); }
 			list.forEach(function (file) {
@@ -49,7 +49,7 @@ var config = z.extend({
 	ftpGet = function(path, callback) {
 		var data = '';
 		/*==========  Get Content of file 'path'  ==========*/
-		// ftp.get(path, function(err, socket) {
+		// fx.ftpC.get(path, function(err, socket) {
 		// 	if (err) { z.logErr('There was an error in the path.'); callback(err); }
 
 		// 	socket.on("data", function(d) { data += d.toString(); });
