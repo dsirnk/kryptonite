@@ -54,4 +54,4 @@ var config = {
 };
 config = z.extend(config, my.websites.themobilestore);
 
-var fx = new fxp(config)
+var fx = new fxp(config);

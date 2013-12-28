@@ -67,7 +67,7 @@ dsi.prototype = {
 
 		/*==========  Customize Prompt  ==========*/
 		prmpt.message = '';
-		// prmpt.delimiter = ':';
+		prmpt.delimiter = ':';
 
 		prmpt.start();
 		prmpt.get(schema, function (err, result) {
@@ -76,29 +76,40 @@ dsi.prototype = {
 		});
 	},
 	log: function(cmd, options) {
+		/*==========  'cont' to log contuniously w/o line breaks  ==========*/
 		options = options || {cont: false};
+
 		if (options.cont) process.stdout.write(cmd);
 		else console.log(cmd);
 	},
+	/*==========  Log output  ==========*/
 	logO: function(cmd) {
 		this.log(cmd.toString().data);
 	},
+	/*==========  Log error  ==========*/
 	logErr: function(cmd) {
 		this.log(cmd.toString().alert);
 	},
+	/*==========  Log in a verbose mode, if '_defaults._verbose' is set to 'true' or 'debug'  ==========*/
 	logV: function(cmd) {
 		if(this.options._verbose) this.log(cmd.toString().info);
 	},
+	/*==========  Log in a debug mode, if '_defaults._verbose' is set to 'true'  ==========*/
 	logD: function(cmd) {
 		if(this.options._verbose === 'debug') this.log(cmd.toString().info.log);
 	},
-	logBul: function(cmd) { this.log(this.options.bullet.intro + cmd); },
+	/*==========  Log list  ==========*/
+	logBul: function(cmd) {
+		this.log(this.options.bullet.intro + cmd);
+	},
+	/*==========  Log a separator  ==========*/
 	logDash: function() {
 		this.log(
 			Array(this.options.separatorLen)
 				.join(this.options.separator)
 		);
 	},
+	/*==========  Log tree of the folder structure  ==========*/
 	ls: function(file, options) {
 		options = this.extend({isDir: false, path:''}, options);
 		type = options.isDir ? 'dir' : 'file';
@@ -108,7 +119,11 @@ dsi.prototype = {
 			file.name[type]
 		);
 	},
-	dir: function(cmd) { console.dir(cmd); },
+	/*==========  Log expandable dir on console  ==========*/
+	dir: function(cmd) {
+		console.dir(cmd);
+	},
+	/*==========  Create folder at 'path'  ==========*/
 	mkdir: function(path) {
 		var self = this;
 		mkdirp(path, function(err) {
@@ -116,6 +131,7 @@ dsi.prototype = {
 			else self.logV('Created '.info + 'Directory: '.dir + path.data);
 		})
 	},
+	/*==========  Create File at 'path'  ==========*/
 	mkfile: function(path) {
 		var self = this,
 			writeStream = fs.createWriteStream(path);
