@@ -37,17 +37,26 @@ var dsi = module.exports = function(options) {
 
 dsi.prototype = {
 	init: function () {
+		/*==========  Set color scheme  ==========*/
 		colors.setTheme(this.options.colors);
 	},
 	extend: function(destination, source) {
-		var target = JSON.parse(JSON.stringify(destination));
-		source = typeof source === 'object' ? source : {};
-		for (var property in source) {
-			if (source[property] && source[property].constructor && source[property].constructor === Object) {
-				target[property] = destination[property] || {};
-				target[property] = arguments.callee(destination[property], source[property]);
+		var target = JSON.parse(JSON.stringify(destination)),
+			source = typeof source === 'object' ? source : {};
+
+		/*==========  If destination contains functions and soruce doesn't, the functions are lost  ==========*/
+		for (prop in destination) {
+			if(typeof destination[prop] === 'function')
+				target[prop] = destination[prop];
+		};
+
+		/*==========  Recursively merge source into destination and output on target  ==========*/
+		for (prop in source) {
+			if (source[prop] && source[prop].constructor && source[prop].constructor === Object) {
+				target[prop] = destination[prop] || {};
+				target[prop] = arguments.callee(destination[prop], source[prop]);
 			} else {
-				target[property] = source[property];
+				target[prop] = source[prop];
 			}
 		}
 		return target;
@@ -55,11 +64,14 @@ dsi.prototype = {
 	prompt: function(properties, callback) {
 		var self = this,
 			schema = {properties: properties};
+
+		/*==========  Customize Prompt  ==========*/
 		prmpt.message = '';
 		// prmpt.delimiter = ':';
+
 		prmpt.start();
 		prmpt.get(schema, function (err, result) {
-			if (err) { self.log(err.alert); }
+			if (err) self.log(err.alert);
 			callback(result);
 		});
 	},
@@ -101,11 +113,15 @@ dsi.prototype = {
 		var self = this;
 		mkdirp(path, function(err) {
 			if (err) console.error((err).red);
-			else self.logV('Created Directory: '.info + path.data);
+			else self.logV('Created '.info + 'Directory: '.dir + path.data);
 		})
 	},
 	mkfile: function(path) {
-		fs.createWriteStream(path);
-		this.logV('Created File: '.info + path.data);
+		var self = this,
+			writeStream = fs.createWriteStream(path);
+		writeStream.on('close', function() {
+			self.logV('Created '.info + 'File: '.file + path.data);
+		});
+		return writeStream;
 	}
 }
