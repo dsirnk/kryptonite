@@ -71,8 +71,8 @@ dsi.prototype = {
 
 		prmpt.start();
 		prmpt.get(schema, function (err, result) {
-			if (err) self.log(err.alert);
-			callback(result);
+			if (err) { self.logErr(err); callback(err); }
+			else callback(result);
 		});
 	},
 	log: function(cmd, options) {
@@ -127,7 +127,7 @@ dsi.prototype = {
 	mkdir: function(path) {
 		var self = this;
 		mkdirp(path, function(err) {
-			if (err) console.error((err).red);
+			if (err) self.logErr(err);
 			else self.logV('Created '.info + 'Directory: '.dir + path.data);
 		})
 	},

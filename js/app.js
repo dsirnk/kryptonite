@@ -27,7 +27,7 @@ var config = {
 			fx.ftpC.ls(dir, function(err, list) {
 				z.logD('Iterating over ' + dir.dir);
 				if (err) z.logErr(err);
-				async.each(
+				else async.each(
 					list,
 					function(file, callback) {
 						var path = dir + file.name,
@@ -43,7 +43,7 @@ var config = {
 					},
 					function(err) {
 						if(err) z.logErr(err);
-						z.logD('Iterating done ');
+						else z.logD('Iterating done ');
 					}
 				);
 			});

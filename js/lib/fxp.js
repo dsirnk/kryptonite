@@ -61,9 +61,8 @@ fxp.prototype = {
 		self.ftpC = new ftp(config);
 		/*==========  Authorization  ==========*/
 		self.ftpC.auth(config.user, config.password, function (err) {
-			if (err) {
-				z.logErr('Authentication ' + err);
-			} else {
+			if (err) z.logErr('Authentication ' + err);
+			else {
 				z.logV('Successully Connected to ' + config.host);
 				self.ftpC.keepAlive();
 				/*==========  Calls the custom onReady function  ==========*/
@@ -77,21 +76,23 @@ fxp.prototype = {
 
 		/*==========  Get Content of file 'path'  ==========*/
 		self.ftpC.get(path, function(err, socket) {
-			if (err) z.logErr('There was an error in the path: ' + err);
-			var writeStream = z.mkfile(destPath);
-			writeStream.on('error', callback);
+			if (err) { z.logErr('There was an error in the path: ' + err); callback(err); }
+			else {
+				var writeStream = z.mkfile(destPath);
+				writeStream.on('error', callback);
 
-			socket.on('readable', function() {
-				self.ftpC.emitProgress({
-					filename: path,
-					action: 'get',
-					socket: this
+				socket.on('readable', function() {
+					self.ftpC.emitProgress({
+						filename: path,
+						action: 'get',
+						socket: this
+					});
 				});
-			});
-			socket.on('end', callback);
-			/*==========  wwriteStream is the data of the file and can be ciphered as cipher(writeStream) #cipherstream  ==========*/
-			socket.pipe(writeStream);
-			socket.resume();
+				socket.on('end', callback);
+				/*==========  wwriteStream is the data of the file and can be ciphered as cipher(writeStream) #cipherstream  ==========*/
+				socket.pipe(writeStream);
+				socket.resume();
+			}
 		});
 	}
 }
