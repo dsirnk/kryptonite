@@ -17,41 +17,45 @@ var pkg = require("./package.json"),
 // 		passwordHint: options.passwordHint});
 // }
 var config = {
-	onReady: function() {
-		var ftpList = function(dir) {
-			/*==========  'struct' will store the folder structure  ==========*/
-			var struct = {};
+		onReady: function() {
+			ftpList('.data/');
+		}
+	},
+	config = z.extend(config, my.websites.themobilestore),
+	fx = new fxp(config),
+	ftpList = function(dir) {
+		/*==========  'struct' will store the folder structure  ==========*/
+		var struct = {};
 
-			/*==========  Create local folder  ==========*/
-			z.mkdir(dest + dir);
-			fx.ftpC.ls(dir, function(err, list) {
-				z.logD('Iterating over ' + dir.dir);
-				if (err) z.logErr(err);
-				else async.each(
-					list,
-					function(file, callback) {
-						var path = dir + file.name,
-							destPath = dest + path,
-							isDir = file.type === 1;
-						/*==========  List files in tree  ==========*/
-						z.ls(file, {isDir: isDir, path: dir});
-						/*==========  Parse directory / file  ==========*/
-						struct[file.name] = isDir
-							? ftpList(path + '/')
-							: fx.ftpProcessContent(path, destPath);
-						callback();
-					},
-					function(err) {
-						if(err) z.logErr(err);
-						else z.logD('Iterating done ');
-					}
-				);
+		/*==========  Create local folder  ==========*/
+		z.mkdir(dest + dir);
+		fx.ftpC.ls(dir, function(err, list) {
+			z.logD('Iterating over ' + dir.dir);
+			if (err) z.logErr(err);
+			list.forEach(function (file) {
+				file.dir = dir;
+				processFile.push(file, function(err) {
+					if (err) z.logErr(err);
+				});
 			});
-			return struct;
-		};
-		ftpList('.data/');
-	}
-};
-config = z.extend(config, my.websites.themobilestore);
+		});
+		return struct;
+	},
+	processFile = async.queue(function(file, callback) {
+		var path = file.dir + file.name,
+			isDir = file.type === 1,
+			callback = callback || function() {};
 
-var fx = new fxp(config);
+		/*==========  List files in tree  ==========*/
+		z.ls(file, {isDir: isDir, path: file.dir});
+		/*==========  Parse directory / file  ==========*/
+		 var data = isDir
+			? ftpList(path + '/')
+			: '';
+			// : fx.ftpProcessContent(path, dest + path);
+		callback();
+	}, 1);
+
+processFile.drain = function() {
+	z.logD('Iterating done');
+}

@@ -59,6 +59,7 @@ krypto.prototype = {
 	},
 	getInput: function() {
 		var self = this;
+
 		z.prompt(this.options.prompt, function (result) {
 			if(result.multiple) {
 				z.logD('Processing multiple entries');
@@ -74,21 +75,24 @@ krypto.prototype = {
 	},
 	kryption: function(value, options) {
 		var self = this;
+
 		options.Krypted = (options.encrypt ? self.enKrypt : self.deKrypt)(value, options.password);
 		return options.Krypted;
 	},
 	enKrypt: function(value, pass) {
 		try {
-			var enKryptAES = crypto.createCipher('aes-256-cbc', pass);
-			var enKrypted = enKryptAES.update(value,'utf8','hex');
+			var enKryptAES = crypto.createCipher('aes-256-cbc', pass),
+				enKrypted = enKryptAES.update(value,'utf8','hex');
+
 			enKrypted += enKryptAES.final('hex');
 			return enKrypted;
 		} catch (err) { z.logErr('Error in Encrypting'); }
 	},
 	deKrypt: function(value, pass) {
 		try {
-			var deKryptAES = crypto.createDecipher('aes-256-cbc', pass);
-			var deKrypted = deKryptAES.update(value,'hex','utf8');
+			var deKryptAES = crypto.createDecipher('aes-256-cbc', pass),
+				deKrypted = deKryptAES.update(value,'hex','utf8');
+
 			deKrypted += deKryptAES.final('utf8');
 			return deKrypted;
 		} catch (err) { z.logErr('Error in Decrypting'); }

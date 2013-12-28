@@ -77,10 +77,20 @@ dsi.prototype = {
 	},
 	log: function(cmd, options) {
 		/*==========  'cont' to log contuniously w/o line breaks  ==========*/
-		options = options || {cont: false};
+		var options = options || {type: typeof cmd},
+			output = {
+				string: function() {
+					console.log(cmd)
+				},
+				object: function() {
+					console.log(util.inspect(cmd, { colors: true, showHidden: true, depth: null }))
+				},
+				cont: function() {
+					process.stdout.write(cmd)
+				}
+			};
 
-		if (options.cont) process.stdout.write(cmd);
-		else console.log(cmd);
+		output[options.type]();
 	},
 	/*==========  Log output  ==========*/
 	logO: function(cmd) {
@@ -126,6 +136,7 @@ dsi.prototype = {
 	/*==========  Create folder at 'path'  ==========*/
 	mkdir: function(path) {
 		var self = this;
+
 		mkdirp(path, function(err) {
 			if (err) self.logErr(err);
 			else self.logV('Created '.info + 'Directory: '.dir + path.data);
@@ -135,6 +146,7 @@ dsi.prototype = {
 	mkfile: function(path) {
 		var self = this,
 			writeStream = fs.createWriteStream(path);
+
 		writeStream.on('close', function() {
 			self.logV('Created '.info + 'File: '.file + path.data);
 		});
