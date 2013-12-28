@@ -71,8 +71,8 @@ dsi.prototype = {
 
 		prmpt.start();
 		prmpt.get(schema, function (err, result) {
-			if (err) { self.logErr(err); callback(err); }
-			else callback(result);
+			if (err) { self.logErr(err); return; }
+			callback(result);
 		});
 	},
 	log: function(cmd, options) {
@@ -138,18 +138,17 @@ dsi.prototype = {
 		var self = this;
 
 		mkdirp(path, function(err) {
-			if (err) self.logErr(err);
-			else self.logV('Created '.info + 'Directory: '.dir + path.data);
+			if (err) { self.logErr(err); return; }
+			self.logD('Created '.info + 'Directory: '.dir + path.data);
 		})
 	},
 	/*==========  Create File at 'path'  ==========*/
-	mkfile: function(path) {
-		var self = this,
-			writeStream = fs.createWriteStream(path);
+	mkfile: function(path, data) {
+		var self = this;
 
-		writeStream.on('close', function() {
-			self.logV('Created '.info + 'File: '.file + path.data);
+		fs.writeFile(path, data, function(err) {
+			if(err) { self.logErr(err); return; }
+			self.logD('Created '.info + 'File: '.file + path.data);
 		});
-		return writeStream;
 	}
 }

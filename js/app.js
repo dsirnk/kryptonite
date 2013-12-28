@@ -6,7 +6,7 @@ var pkg = require("./package.json"),
 	async = require("async"),
 	firebase = require('firebase'),
 	firebaseRoot = new firebase(pkg.firebase + '/ftp'),
-	dest = '',
+	dest = 'dest',
 	z = new dsi();
 
 // krypt = new krypto();
@@ -16,46 +16,49 @@ var pkg = require("./package.json"),
 //		aes: (options.encrypt ? krypto.enKrypt : krypto.deKrypt)(options.value, options.password),
 // 		passwordHint: options.passwordHint});
 // }
-var config = {
+var config = z.extend({
 		onReady: function() {
-			ftpList('.data/');
+			ftpList('/.data/', function(err) {
+				if (err) { z.logErr(err); }
+			});
 		}
-	},
-	config = z.extend(config, my.websites.themobilestore),
-	fx = new fxp(config),
-	ftpList = function(dir) {
+	}, my.websites.themobilestore),
+	ftp = new fxp(config).ftpC,
+	ftpList = function(dir, callback) {
 		/*==========  'struct' will store the folder structure  ==========*/
 		var struct = {};
 
 		/*==========  Create local folder  ==========*/
+		if(dir[dir.length-1] !== '/') dir += '/';
 		z.mkdir(dest + dir);
-		fx.ftpC.ls(dir, function(err, list) {
+		ftp.ls(dir, function(err, list) {
 			z.logD('Iterating over ' + dir.dir);
-			if (err) z.logErr(err);
+			if (err) { z.logErr(err); callback(err); }
 			list.forEach(function (file) {
-				file.dir = dir;
-				processFile.push(file, function(err) {
-					if (err) z.logErr(err);
-				});
+				var path = dir + file.name,
+					isDir = file.type === 1;
+
+				/*==========  List files in tree  ==========*/
+				z.ls(file, {isDir: isDir, path: dir});
+				/*==========  Parse directory / file  ==========*/
+				struct[file.name] = (isDir ? ftpList : ftpGet)(path, callback);
 			});
 		});
 		return struct;
 	},
-	processFile = async.queue(function(file, callback) {
-		var path = file.dir + file.name,
-			isDir = file.type === 1,
-			callback = callback || function() {};
+	ftpGet = function(path, callback) {
+		var data = '';
+		/*==========  Get Content of file 'path'  ==========*/
+		// ftp.get(path, function(err, socket) {
+		// 	if (err) { z.logErr('There was an error in the path.'); callback(err); }
 
-		/*==========  List files in tree  ==========*/
-		z.ls(file, {isDir: isDir, path: file.dir});
-		/*==========  Parse directory / file  ==========*/
-		 var data = isDir
-			? ftpList(path + '/')
-			: '';
-			// : fx.ftpProcessContent(path, dest + path);
-		callback();
-	}, 1);
-
-processFile.drain = function() {
-	z.logD('Iterating done');
-}
+		// 	socket.on("data", function(d) { data += d.toString(); });
+		// 	socket.on("close", function(err) {
+		// 		if (err) { z.logErr('There was an error retrieving the file.'); callback(err); }
+		// 		z.mkfile(dest + path, data);
+		// 		callback();
+		// 	});
+		// 	socket.resume();
+		// });
+		return data;
+	};
