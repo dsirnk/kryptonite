@@ -18,47 +18,62 @@ var pkg = require("./package.json"),
 // }
 var config = z.extend({
 		onReady: function() {
-			ftpList('/.data/', function(err) {
-				if (err) { z.logErr(err); }
-			});
+			ftpList('/.data/');
 		}
 	}, my.websites.themobilestore),
-	fx = new fxp(config),
-	ftpList = function(dir, callback) {
-		/*==========  'struct' will store the folder structure  ==========*/
-		var struct = {};
-
+	x = new fxp(config),
+	depth = 2,
+	/*==========  'struct' will store the folder structure  ==========*/
+	struct = [],
+	ftpList = function(dir) {
+		z.log(this);
 		/*==========  Create local folder  ==========*/
 		if(dir[dir.length-1] !== '/') dir += '/';
-		z.mkdir(dest + dir);
-		fx.ftpC.ls(dir, function(err, list) {
-			z.logD('Iterating over ' + dir.dir);
-			if (err) { z.logErr(err); callback(err); }
-			list.forEach(function (file) {
-				var path = dir + file.name,
-					isDir = file.type === 1;
 
-				/*==========  List files in tree  ==========*/
-				z.ls(file, {isDir: isDir, path: dir});
-				/*==========  Parse directory / file  ==========*/
-				struct[file.name] = (isDir ? ftpList : ftpGet)(path, callback);
-			});
+		z.mkdir(dest + dir, function() {
+			if(depth === null || z.depth(dir) - 3 < depth) {
+				z.logD('Iterating over ' + dir.dir);
+				x.ftpC.ls(dir, function(err, list) {
+					if (err) {
+						z.logErr('The was an error while iterating over ' + dir.dir + ': ');
+						z.log(err);
+					}
+					list.forEach(function (file, i) {
+						var isDir = file.type === 1,
+							path = dir + file.name + (isDir ? '/' : '');
+
+						/*==========  List files in tree  ==========*/
+						struct.push(path);
+						// z.ls(file.name, {isDir: isDir, path: dir});
+						/*==========  Parse directory / file  ==========*/
+						(isDir ? ftpList : ftpGet)(path);
+					});
+				});
+			};
 		});
-		return struct;
+
 	},
-	ftpGet = function(path, callback) {
+	ftpGet = function(path) {
 		var data = '';
 		/*==========  Get Content of file 'path'  ==========*/
-		// fx.ftpC.get(path, function(err, socket) {
-		// 	if (err) { z.logErr('There was an error in the path.'); callback(err); }
+		z.logD('Parsing over ' + path.file);
+		// fx = new fxp(config);
+		x.ftpC.get(path, function(err, socket) {
+			if (err) {
+				z.logErr('There was an error while parsing over ' + path.file + ': ');
+				z.log(err);
+			}
 
-		// 	socket.on("data", function(d) { data += d.toString(); });
-		// 	socket.on("close", function(err) {
-		// 		if (err) { z.logErr('There was an error retrieving the file.'); callback(err); }
-		// 		z.mkfile(dest + path, data);
-		// 		callback();
-		// 	});
-		// 	socket.resume();
-		// });
+			socket.on("data", function(d) { data += d.toString(); });
+			socket.on("close", function(err) {
+				if (err) {
+					z.logErr('There was an error retrieving the file ' + path.file + ': ');
+					z.log(err);
+				}
+				z.mkfile(dest + path, data);
+			});
+			socket.resume();
+		});
+		// fx.ftpC.destroy();
 		return data;
 	};

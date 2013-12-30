@@ -92,6 +92,9 @@ dsi.prototype = {
 
 		output[options.type]();
 	},
+	logW: function(cmd) {
+		this.log(cmd, {'type': 'cont'});
+	},
 	/*==========  Log output  ==========*/
 	logO: function(cmd) {
 		this.log(cmd.toString().data);
@@ -120,35 +123,44 @@ dsi.prototype = {
 		);
 	},
 	/*==========  Log tree of the folder structure  ==========*/
-	ls: function(file, options) {
+	ls: function(name, options) {
 		var options = this.extend({isDir: false, path:''}, options),
 			type = options.isDir ? 'dir' : 'file';
 		this.log(
-			Array(options.path.split('/').length).join('\t') +
+			Array(this.depth(options.path)).join('\t') +
 			this.options.symbol[type] +
-			file.name[type]
+			name[type]
 		);
+	},
+	depth: function(path) {
+		return path.split('/').length;
 	},
 	/*==========  Log expandable dir on console  ==========*/
 	dir: function(cmd) {
 		console.dir(cmd);
 	},
+	/*==========  Log trace of variable  ==========*/
+	trace: function(cmd) {
+		console.trace(cmd);
+	},
 	/*==========  Create folder at 'path'  ==========*/
-	mkdir: function(path) {
+	mkdir: function(path, callback) {
 		var self = this;
 
 		mkdirp(path, function(err) {
 			if (err) { self.logErr(err); return; }
-			self.logD('Created '.info + 'Directory: '.dir + path.data);
+			if(callback) callback();
+			else self.logD('Created '.info + 'Directory: '.dir + path.data);
 		})
 	},
 	/*==========  Create File at 'path'  ==========*/
-	mkfile: function(path, data) {
+	mkfile: function(path, data, callback) {
 		var self = this;
 
 		fs.writeFile(path, data, function(err) {
 			if(err) { self.logErr(err); return; }
-			self.logD('Created '.info + 'File: '.file + path.data);
+			if(callback) callback();
+			else self.logD('Created '.info + 'File: '.file + path.data);
 		});
 	}
 }

@@ -63,7 +63,6 @@ fxp.prototype = {
 		self.ftpC.auth(config.user, config.password, function (err) {
 			if (err) { z.logErr('Authentication ' + err); return; }
 			z.logV('Successully Connected to ' + config.host);
-			self.ftpC.keepAlive();
 			/*==========  Calls the custom onReady function  ==========*/
 			self.options.onReady();
 		});
