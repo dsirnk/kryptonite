@@ -79,18 +79,19 @@ dsi.prototype = {
 		/*==========  'cont' to log contuniously w/o line breaks  ==========*/
 		var options = options || {type: typeof cmd},
 			output = {
-				string: function() {
-					console.log(cmd)
+				default: function() {
+					console.log(cmd);
 				},
 				object: function() {
-					console.log(util.inspect(cmd, { colors: true, showHidden: true, depth: null }))
+					console.log(util.inspect(cmd, { colors: true, showHidden: true, depth: null }));
 				},
 				cont: function() {
-					process.stdout.write(cmd)
+					process.stdout.write(cmd);
 				}
 			};
 
-		output[options.type]();
+		if (output[options.type]) output[options.type]();
+		else output['default']();
 	},
 	logW: function(cmd) {
 		this.log(cmd, {'type': 'cont'});
@@ -116,9 +117,9 @@ dsi.prototype = {
 		this.log(this.options.bullet.intro + cmd);
 	},
 	/*==========  Log a separator  ==========*/
-	logDash: function() {
+	logDash: function(n) {
 		this.log(
-			Array(this.options.separatorLen)
+			Array(n || this.options.separatorLen)
 				.join(this.options.separator)
 		);
 	},
@@ -149,8 +150,9 @@ dsi.prototype = {
 
 		mkdirp(path, function(err) {
 			if (err) { self.logErr(err); return; }
-			if(callback) callback();
-			else self.logD('Created '.info + 'Directory: '.dir + path.data);
+			var logStr = 'Created '.info + 'Directory: '.dir + path.data;
+			if(callback) callback(logStr);
+			else self.logD(logStr);
 		})
 	},
 	/*==========  Create File at 'path'  ==========*/
@@ -159,8 +161,9 @@ dsi.prototype = {
 
 		fs.writeFile(path, data, function(err) {
 			if(err) { self.logErr(err); return; }
-			if(callback) callback();
-			else self.logD('Created '.info + 'File: '.file + path.data);
+			var logStr = 'Created '.info + 'File: '.file + path.data;
+			if(callback) callback(logStr);
+			else self.logD(logStr);
 		});
 	}
 }
