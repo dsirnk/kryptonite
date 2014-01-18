@@ -232,6 +232,6 @@ dsi.prototype = {
 			}
 
 		// krypt.algorithm = krypt.algorithm || self.get('algorithm');
-		self.options.krypt['key'] !== undefined ? useKey(self.options.krypt) : self.get('key', useKey);
+		self.options.krypt['key'] !== undefined ? useKey(self.options.krypt) : self.get('key', {hidden:true}, useKey);
 	}
 }
