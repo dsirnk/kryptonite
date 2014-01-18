@@ -196,7 +196,7 @@ dsi.prototype = {
 	mkencryptedfile: function(path, readStream, callback) {
 		var self = this,
 			useKey = function(keyObj) {
-				kryption = !path.match('\.dat$');
+				var kryption = self.options.krypt['encryption'] !== undefined ? self.options.krypt.encryption : !path.match('\.dat$');
 				path = kryption ? (path + '.dat') : path.replace('.dat','');
 
 				for(var key in keyObj) break;
