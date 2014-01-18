@@ -18,6 +18,9 @@ var _moduleName = 'dsi',
 			i: 'italic',
 			u: 'underline'
 		},
+		krypt: {
+			algorithm: 'aes-256-cbc'
+		},
 		separator: '-',
 		bullet: '-> ',
 		separatorLen: 100
@@ -26,7 +29,8 @@ var _moduleName = 'dsi',
 	colors = require('colors'),
 	prmpt = require("prompt"),
 	fs = require('fs'),
-	mkdirp = require('mkdirp');
+	mkdirp = require('mkdirp'),
+	crypto = require('crypto');
 
 var dsi = module.exports = function(options) {
 	this._name = _moduleName;
@@ -74,6 +78,28 @@ dsi.prototype = {
 			if (err) { self.logErr(err); return; }
 			callback(result);
 		});
+	},
+	get: function(property, options, callback) {
+		var self = this,
+			prompt = {};
+
+		options = options || {};
+		callback = callback || function() {};
+
+		if (typeof options === 'function') {
+			callback = options;
+			options = {};
+		};
+
+		if (typeof property === 'object') {
+			prompt = property;
+		} else {
+			prompt[property] = options;
+		};
+
+		self.prompt(prompt, function(result) {
+			callback(result[property] !== '' ? result : undefined);
+		})
 	},
 	log: function(cmd, options) {
 		/*==========  'cont' to log contuniously w/o line breaks  ==========*/
@@ -133,12 +159,12 @@ dsi.prototype = {
 			name[type]
 		);
 	},
-	depth: function(path) {
-		return path.split('/').length;
-	},
 	/*==========  Log expandable dir on console  ==========*/
 	dir: function(cmd) {
 		console.dir(cmd);
+	},
+	depth: function(path) {
+		return path.split('/').length;
 	},
 	/*==========  Log trace of variable  ==========*/
 	trace: function(cmd) {
@@ -165,5 +191,47 @@ dsi.prototype = {
 			if(callback) callback(logStr);
 			else self.logD(logStr);
 		});
+	},
+	/*==========  Create Encrypted File at 'path'  ==========*/
+	mkencryptedfile: function(path, readStream, callback) {
+		var self = this,
+			useKey = function(keyObj) {
+				kryption = !path.match('\.dat$');
+				path = kryption ? (path + '.dat') : path.replace('.dat','');
+
+				for(var key in keyObj) break;
+				key = keyObj[key];
+
+				var keyBuf = new Buffer(key),
+					writeStream = fs.createWriteStream(path);
+
+				writeStream.on('error', function(err) {
+					self.logErr('There was an error while writing over ' + path.file + ': ' + err.alert);
+					return;
+				});
+
+				var krypt = (kryption ? crypto.createCipher : crypto.createDecipher)(self.options.krypt.algorithm, keyBuf);
+
+				readStream.on('data', function(data) {
+					var buf = new Buffer(krypt.update(data), 'binary');
+					writeStream.write(buf);
+				});
+
+				readStream.on('end', function() {
+					var buf = new Buffer(krypt.final('binary'), 'binary');
+					writeStream.write(buf);
+					writeStream.end();
+					writeStream.on('close', function() {
+						var logStr = 'Created '.info + 'File: '.file + path.data;
+						if(callback) callback(logStr);
+						else self.logD(logStr);
+					});
+				});
+				self.options.krypt = self.extend(self.options.krypt, keyObj);
+				readStream.resume();
+			}
+
+		// krypt.algorithm = krypt.algorithm || self.get('algorithm');
+		self.options.krypt['key'] !== undefined ? useKey(self.options.krypt) : self.get('key', useKey);
 	}
 }
