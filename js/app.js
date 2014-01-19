@@ -10,7 +10,7 @@ var _moduleName = 'kryptFxp',
 var config = z.extend({
 		onReady: function() {
 			/*==========  Init  ==========*/
-			ftpList('/src/');
+			ftpList('/');
 		}
 	}, my.websites.themobilestore),
 	x = new fxp(config),
