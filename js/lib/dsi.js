@@ -27,7 +27,7 @@ var _moduleName = 'dsi',
 	},
 	util = require('util'),
 	colors = require('colors'),
-	prmpt = require("prompt"),
+	prmpt = require('prompt'),
 	fs = require('fs'),
 	mkdirp = require('mkdirp'),
 	crypto = require('crypto');
@@ -127,8 +127,12 @@ dsi.prototype = {
 		this.log(cmd.toString().data);
 	},
 	/*==========  Log error  ==========*/
-	logErr: function(cmd) {
+	logError: function(cmd) {
 		this.log(cmd.toString().alert);
+	},
+	logErr: function(err, str) {
+		this.logErr(str);
+		this.log(err);
 	},
 	/*==========  Log in a verbose mode, if '_defaults._verbose' is set to 'true' or 'debug'  ==========*/
 	logV: function(cmd) {

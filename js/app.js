@@ -1,16 +1,17 @@
 var _moduleName = 'kryptFxp',
 	_dest = 'dest',
-	my = require("../config.json"),
-	pkg = require("./package.json"),
-	dsi = require("./lib/dsi"),
-	fxp = require("./lib/fxp"),
-	async = require("async"),
+	my = require('../config.json'),
+	pkg = require('./package.json'),
+	dsi = require('./lib/dsi'),
+	fxp = require('./lib/fxp'),
+	async = require('async'),
+	express = require('express');
 	z = new dsi();
 
 var config = z.extend({
 		onReady: function() {
 			/*==========  Init  ==========*/
-			ftpList('/');
+			// ftpList('/');
 		}
 	}, my.websites.themobilestore),
 	x = new fxp(config),
@@ -30,10 +31,8 @@ var config = z.extend({
 
 				/*==========  Get list of the files and folders in 'dir'  ==========*/
 				x.ftpC.ls(dir, function(err, list) {
-					if (err) {
-						z.logErr('The was an error while iterating over ' + dir.dir + ': ');
-						z.log(err);
-					}
+					if (err) return z.logErr(err, 'While iterating over ' + dir.dir);
+
 					list.forEach(function (file, i) {
 						var isDir = file.type === 1,
 							path = dir + file.name + (isDir ? '/' : '');
@@ -57,10 +56,7 @@ var config = z.extend({
 
 		/*==========  Get Content of file 'path'  ==========*/
 		x.ftpC.getGetSocket(path, function(err, socket) {
-			if (err) {
-				z.logErr('There was an error while parsing over ' + path.file + ': ');
-				z.log(err);
-			}
+			if (err) return z.logErr(err, 'While parsing over ' + path.file);
 
 			z.mkencryptedfile(_dest + path, socket, function(logStr) {
 				z.logV(logStr);

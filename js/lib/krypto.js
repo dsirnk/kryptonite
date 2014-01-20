@@ -86,7 +86,7 @@ krypto.prototype = {
 
 			enKrypted += enKryptAES.final('hex');
 			return enKrypted;
-		} catch (err) { z.logErr('Error in Encrypting'); }
+		} catch (err) { z.logErr(err, 'While Encrypting'); }
 	},
 	deKrypt: function(value, pass) {
 		try {
@@ -95,6 +95,6 @@ krypto.prototype = {
 
 			deKrypted += deKryptAES.final('utf8');
 			return deKrypted;
-		} catch (err) { z.logErr('Error in Decrypting'); }
+		} catch (err) { z.logErr(err, 'While Decrypting'); }
 	}
 }

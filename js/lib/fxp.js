@@ -61,7 +61,7 @@ fxp.prototype = {
 		self.ftpC = new ftp(config);
 		/*==========  Authorization  ==========*/
 		self.ftpC.auth(config.user, config.password, function (err) {
-			if (err) { z.logErr('Authentication ' + err); return; }
+			if (err) return z.logErr(err, 'While Authenticating');
 			z.logV('Successully Connected to ' + config.host);
 			/*==========  Calls the custom onReady function  ==========*/
 			self.options.onReady();
