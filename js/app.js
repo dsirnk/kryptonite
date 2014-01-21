@@ -1,21 +1,19 @@
 var _moduleName = 'kryptFxp',
 	_dest = 'dest',
-	my = require('../config.json'),
-	pkg = require('./package.json'),
+	async = require('async');
 	dsi = require('./lib/dsi'),
 	fxp = require('./lib/fxp'),
-	async = require('async'),
-	express = require('express');
-	z = new dsi();
+	my = require('../config.json'),
+	pkg = require('./package.json'),
+	z = new dsi({output:'browser'});
 
-var config = z.extend({
-		onReady: function() {
-			/*==========  Init  ==========*/
-			// ftpList('/');
-		}
-	}, my.websites.themobilestore),
-	x = new fxp(config),
-	depth = 2,
+/*==========  FTP, file Xransfer Protocol to download and encrypt files  ==========*/
+z.fxp(my.websites.themobilestore, function() {
+	/*==========  Init  ==========*/
+	ftpList('/');
+});
+
+var depth = 2,
 	/*==========  'struct' will store the folder structure  ==========*/
 	struct = [],
 	ftpList = function(dir, callback) {
@@ -30,7 +28,7 @@ var config = z.extend({
 				z.logD('Iterating over ' + dir.dir);
 
 				/*==========  Get list of the files and folders in 'dir'  ==========*/
-				x.ftpC.ls(dir, function(err, list) {
+				z.ftpC.ls(dir, function(err, list) {
 					if (err) return z.logErr(err, 'While iterating over ' + dir.dir);
 
 					list.forEach(function (file, i) {
@@ -55,7 +53,7 @@ var config = z.extend({
 		z.logD('Parsing over ' + path.file);
 
 		/*==========  Get Content of file 'path'  ==========*/
-		x.ftpC.getGetSocket(path, function(err, socket) {
+		z.ftpC.getGetSocket(path, function(err, socket) {
 			if (err) return z.logErr(err, 'While parsing over ' + path.file);
 
 			z.mkencryptedfile(_dest + path, socket, function(logStr) {

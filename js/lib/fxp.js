@@ -21,8 +21,7 @@ var _moduleName = 'fxp',
 		onReady: function() {}
 	},
 	ftp = require('jsftp'),
-	dsi = require('./dsi'),
-	z = new dsi();
+	dsi = require('./dsi');
 
 var fxp = module.exports = function(options) {
 	this._name = _moduleName;
