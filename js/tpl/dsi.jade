@@ -1,0 +1,42 @@
+doctype
+html
+	head
+		title DSI Log
+		script(src='/js/jquery.min.js')
+		script(src='/socket.io/socket.io.js')
+		script(type='text/javascript').
+			(function($) {
+				$(function() {
+					var log = function(msg) {
+							switch(typeof msg) {
+								case 'object':
+								case 'array': {
+									for(var i in msg) {
+										log(msg[i]);
+									}
+									break;
+								}
+								default: {
+									document.getElementById("content")
+										.innerHTML += (msg + '<br />');
+								}
+							}
+						};
+
+					//- $.getJSON(
+					//- 	"http://smart-ip.net/geoip-json?callback=?",
+					//- 	function(data){
+							socket = io.connect('http://localhost:8000');
+							socket.on('greeting', function(data) {
+								log(data);
+								socket.emit('load', { get: true });
+							});
+							socket.on('message', function(data) {
+								log(data);
+							})
+					//- 	}
+					//- );
+				});
+			})(jQuery);
+	body(style='background: black; color: white;')
+		#content(style='width: 100%; height: 100%; overflow: scroll;')
