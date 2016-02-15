@@ -1,6 +1,6 @@
 var _moduleName = 'kryptFxp',
 	_dest = 'dest',
-	async = require('async');
+	async = require('async'),
 	dsi = require('./lib/dsi'),
 	fxp = require('./lib/fxp'),
 	my = require('../config.json'),
