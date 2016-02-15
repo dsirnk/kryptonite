@@ -2,10 +2,9 @@ var _moduleName = 'kryptFxp',
 	_dest = 'dest',
 	async = require('async'),
 	dsi = require('./lib/dsi'),
-	fxp = require('./lib/fxp'),
 	my = require('../config.json'),
 	pkg = require('./package.json'),
-	z = new dsi({output:'browser'});
+	z = new dsi({output:'console'});
 
 /*==========  FTP, file Xransfer Protocol to download and encrypt files  ==========*/
 z.fxp(my.websites.themobilestore, function() {

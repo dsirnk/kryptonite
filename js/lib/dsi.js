@@ -20,7 +20,6 @@ var _moduleName = 'dsi',
 			u: 'underline'
 		},
 		krypt: {
-			key: 'imcentenn1al',
 			algorithm: 'aes-256-cbc'
 		},
 		ftp: {
