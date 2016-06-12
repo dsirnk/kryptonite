@@ -352,7 +352,7 @@ dsi.prototype = {
 		/*==========  Authorization  ==========*/
 		self.ftpC.auth(config.user, config.password, function (err) {
 			if (err) return self.logErr(err, 'While Authenticating');
-			self.logV('Successully Connected to ' + config.host);
+			self.logV('Successfully Connected to ' + config.host);
 			callback();
 		});
 	},
