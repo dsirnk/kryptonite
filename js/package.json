@@ -13,18 +13,18 @@
   "firebase": "https://ydr6gr6hxis.firebaseio-demo.com",
   "dependencies": {
     "async": "~0.2.8",
-    "express": "~3.2.4",
-    "socket.io": "~0.9.14"
+    "express": "^3.21.2",
+    "socket.io": "^4.5.1"
   },
   "devDependencies": {
-    "firebase": "~1.0.1-npm",
-    "prompt": "~0.2.12",
-    "ftp": "~0.3.5",
-    "ssh2": "~0.2.14",
-    "jsftp": "~1.2.1",
-    "colors": "~0.6.2",
     "async": "~0.2.9",
+    "colors": "~0.6.2",
+    "firebase": "~1.0.1-npm",
+    "ftp": "~0.3.5",
+    "jade": "^0.31.2",
+    "jsftp": "~1.2.1",
     "mkdirp": "~0.3.5",
-    "jade": "~1.1.5"
+    "prompt": "~0.2.12",
+    "ssh2": "^1.11.0"
   }
 }
